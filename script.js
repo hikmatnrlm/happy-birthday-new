@@ -9,7 +9,7 @@ function closeImage() {
   document.getElementById('modal').style.display = 'none';
 }
 
-// Fungsi confetti
+// Fungsi confetti jatuh
 function startConfetti(canvasId) {
   const canvas = document.getElementById(canvasId);
   const ctx = canvas.getContext("2d");
@@ -54,18 +54,82 @@ function startConfetti(canvasId) {
   setInterval(draw, 20);
 }
 
-// Event tombol
+// Fungsi confetti ledakan sekali
+function explodeConfettiOnce() {
+  const canvas = document.createElement("canvas");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.position = "fixed";
+  canvas.style.top = "0";
+  canvas.style.left = "0";
+  canvas.style.pointerEvents = "none";
+  canvas.style.zIndex = "5000";
+  document.body.appendChild(canvas);
+
+  const ctx = canvas.getContext("2d");
+  const colors = ["#FFC0CB", "#FFD700", "#FF69B4", "#FFB6C1", "#FFDAB9"];
+  let particles = [];
+
+  for (let i = 0; i < 150; i++) {
+    particles.push({
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      angle: Math.random() * 2 * Math.PI,
+      speed: Math.random() * 8 + 4,
+      radius: Math.random() * 6 + 2,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      alpha: 1
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  function update() {
+    particles.forEach(p => {
+      p.x += Math.cos(p.angle) * p.speed;
+      p.y += Math.sin(p.angle) * p.speed;
+      p.alpha -= 0.02;
+    });
+    particles = particles.filter(p => p.alpha > 0);
+  }
+
+  function loop() {
+    draw();
+    update();
+    if (particles.length > 0) {
+      requestAnimationFrame(loop);
+    } else {
+      document.body.removeChild(canvas);
+    }
+  }
+
+  loop();
+}
+
+// Event tombol Open
 document.addEventListener("DOMContentLoaded", function () {
   const openBtn = document.getElementById("openBtn");
   const bgMusic = document.getElementById("bgMusic");
 
-  // Mulai confetti di intro
+  // Confetti jatuh di intro
   startConfetti("confetti-intro");
 
   openBtn.addEventListener("click", function () {
     document.getElementById("intro-screen").style.display = "none";
     document.getElementById("main-content").style.display = "block";
-    startConfetti("confetti-main"); // confetti di halaman ucapan
+
+    startConfetti("confetti-main"); // confetti jatuh tetap ada
+    explodeConfettiOnce(); // ledakan sekali
+
     bgMusic.play();
   });
 });
